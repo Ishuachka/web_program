@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Практические задания Fetch</title>
+</head>
+<body>
+  <h1>Практические задания Fetch</h1>
+
+  <!-- Первая задача: Измерение времени выполнения запросов -->
+  <section>
+    <h2>Задача 1: Измерение времени запросов</h2>
+    <button id="measure-sequential">Измерить последовательные запросы</button>
+    <button id="measure-concurrent">Измерить параллельные запросы</button>
+    <div id="task1-result"></div>
+  </section>
+
+  <!-- Вторая задача: Получение текущего времени -->
+  <section>
+    <h2>Задача 2: Получение текущего времени</h2>
+    <button id="fetch-time">Получить текущее время</button>
+    <div id="current-time"></div>
+  </section>
+
+  <script>
+    // Задача 1: Измерение времени выполнения запросов
+    const measureSequential = async () => {
+      const task1Result = document.getElementById('task1-result');
+      task1Result.textContent = 'Измеряем время последовательных запросов...';
+      const start = Date.now();
+
+      const res1 = await fetch('https://kodaktor.ru/sleep/?n=7');
+      await res1.text();
+
+      const res2 = await fetch('https://node-server.online/r/fivesec');
+      await res2.text();
+
+      const end = Date.now();
+      task1Result.textContent = `Последовательные запросы заняли ${(end - start) / 1000} секунд`;
+    };
+
+    const measureConcurrent = async () => {
+      const task1Result = document.getElementById('task1-result');
+      task1Result.textContent = 'Измеряем время параллельных запросов...';
+      const start = Date.now();
+
+      const [res1, res2] = await Promise.all([
+        fetch('https://kodaktor.ru/sleep/?n=7'),
+        fetch('https://node-server.online/r/fivesec'),
+      ]);
+
+      await Promise.all([res1.text(), res2.text()]);
+
+      const end = Date.now();
+      task1Result.textContent = `Параллельные запросы заняли ${(end - start) / 1000} секунд`;
+    };
+
+    document.getElementById('measure-sequential').addEventListener('click', measureSequential);
+    document.getElementById('measure-concurrent').addEventListener('click', measureConcurrent);
+
+    // Задача 2: Получение текущего времени
+    const fetchTime = async () => {
+      const currentTimeDiv = document.getElementById('current-time');
+      currentTimeDiv.textContent = 'Получаем текущее время...';
+
+      try {
+        const url = 'https://www.worldtimeserver.com/current_time_in_RU-SPE.aspx?city=Saint_Petersburg';
+        const response = await fetch(url);
+        const html = await response.text();
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const timeElement = doc.querySelector('.fontTS');
+
+        if (timeElement) {
+          currentTimeDiv.textContent = `Текущее время: ${timeElement.textContent.trim()}`;
+        } else {
+          currentTimeDiv.textContent = 'Не удалось найти время в ответе.';
+        }
+      } catch (err) {
+        currentTimeDiv.textContent = `Ошибка при получении времени: ${err.message}`;
+      }
+    };
+
+    document.getElementById('fetch-time').addEventListener('click', fetchTime);
+  </script>
+</body>
+</html>
