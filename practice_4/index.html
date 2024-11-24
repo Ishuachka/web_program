@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Практическое занятие 4</title>
+  <style>
+    :root {
+      --focus-color: #0078D7;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 16px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    speech-component:focus {
+      outline: 2px solid var(--focus-color);
+      border-radius: 4px;
+    }
+
+    speech-component {
+      display: block;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <speech-component title="Заголовок 1" text="Это текст первого компонента."></speech-component>
+    <speech-component title="Заголовок 2" text="Текст второго компонента с фокусом."></speech-component>
+    <speech-component title="Заголовок 3" text="Последний пример с проговариванием."></speech-component>
+  </div>
+
+  <script>
+    class SpeechComponent extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+
+        const style = document.createElement('style');
+        style.textContent = `
+          :host {
+            display: block;
+            margin: 16px;
+            font-family: Arial, sans-serif;
+          }
+          :focus {
+            outline: 2px solid var(--focus-color);
+            border-radius: 4px;
+          }
+        `;
+
+        const container = document.createElement('div');
+        container.tabIndex = 0;
+        container.innerHTML = `
+          <h1>${this.getAttribute('title') || 'Заголовок по умолчанию'}</h1>
+          <p>${this.getAttribute('text') || 'Текст по умолчанию'}</p>
+        `;
+
+        container.addEventListener('focus', () => {
+          const textToSpeak = container.textContent.trim();
+          const utterance = new SpeechSynthesisUtterance(textToSpeak);
+          speechSynthesis.speak(utterance);
+        });
+
+        this.shadowRoot.append(style, container);
+      }
+    }
+
+    customElements.define('speech-component', SpeechComponent);
+  </script>
+</body>
+</html>
